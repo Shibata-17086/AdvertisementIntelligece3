@@ -1,14 +1,18 @@
-import SwiftUICore
+// Views/Settings/SettingsView.swift
+
 import SwiftUI
 
 struct SettingsView: View {
-    @State private var apiKey: String = ""
-    @State private var enableAutoRefresh = true
-    @State private var refreshInterval = 4.0
-    @State private var maxAdsCount = 2
-    @State private var showDebugInfo = false
-    @State private var preferredTheme = 0
+    @State private var apiKey: String = UserDefaults.standard.string(forKey: "visionApiKey") ?? ""
+    @State private var enableAutoRefresh = UserDefaults.standard.bool(forKey: "enableAutoRefresh")
+    @State private var refreshInterval = UserDefaults.standard.double(forKey: "refreshInterval")
+    @State private var maxAdsCount = UserDefaults.standard.integer(forKey: "maxAdsCount")
+    @State private var showDebugInfo = UserDefaults.standard.bool(forKey: "showDebugInfo")
+    @State private var preferredTheme = UserDefaults.standard.integer(forKey: "preferredTheme")
     @State private var isLoading = false
+    
+    // OpenAI API 設定追加
+    @State private var openaiApiKey: String = UserDefaults.standard.string(forKey: "openaiApiKey") ?? ""
     
     private let themes = ["システムデフォルト", "ダーク", "ライト", "Vision Pro風"]
     
@@ -55,6 +59,9 @@ struct SettingsView: View {
                     .background(Color.white.opacity(0.05))
                     .cornerRadius(16)
                 }
+                
+                // OpenAI API設定セクション追加
+                APISettingsSection(openaiApiKey: $openaiApiKey)
                 
                 // セクション：表示設定
                 VStack(alignment: .leading, spacing: 16) {
@@ -167,9 +174,8 @@ struct SettingsView: View {
         isLoading = true
         
         // 設定の保存処理（UserDefaultsなどに保存）
-        // ここではアニメーションのためだけに遅延を入れている
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-            // UserDefaultsに保存する実装をここに追加
+            // 既存の設定値を保存
             UserDefaults.standard.set(self.apiKey, forKey: "visionApiKey")
             UserDefaults.standard.set(self.enableAutoRefresh, forKey: "enableAutoRefresh")
             UserDefaults.standard.set(self.refreshInterval, forKey: "refreshInterval")
@@ -177,9 +183,10 @@ struct SettingsView: View {
             UserDefaults.standard.set(self.showDebugInfo, forKey: "showDebugInfo")
             UserDefaults.standard.set(self.preferredTheme, forKey: "preferredTheme")
             
-            self.isLoading = false
+            // OpenAI APIキーを保存（新規追加）
+            UserDefaults.standard.set(self.openaiApiKey, forKey: "openaiApiKey")
             
-            // 保存完了メッセージなどを表示
+            self.isLoading = false
         }
     }
     
@@ -191,28 +198,6 @@ struct SettingsView: View {
         maxAdsCount = 2
         showDebugInfo = false
         preferredTheme = 0
-    }
-}
-
-// セクションヘッダーコンポーネント
-struct SectionHeader: View {
-    let title: String
-    let icon: String
-    
-    var body: some View {
-        HStack(spacing: 12) {
-            Image(systemName: icon)
-                .font(.system(size: 18, weight: .bold))
-                .foregroundColor(.blue)
-                .frame(width: 36, height: 36)
-                .background(Color.blue.opacity(0.2))
-                .cornerRadius(10)
-            
-            Text(title)
-                .font(.system(size: 20, weight: .bold, design: .rounded))
-                .foregroundColor(.white)
-            
-            Spacer()
-        }
+        openaiApiKey = ""  // OpenAI APIキーもリセット
     }
 }
